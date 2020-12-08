@@ -16,6 +16,7 @@ connectDB();
 // routes
 const bootcampRoutes = require('./routes/bootcamps');
 const courseRoutes = require('./routes/courses');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // mount routers
 app.use('/api/v1/bootcamps', bootcampRoutes);
 app.use('/api/v1/courses', courseRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // middlewares are in a linear fashion
 app.use(errorHandler);
