@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { access } = require('../middleware/auth/auth');
+const { L2 } = require('../middleware/auth/authLevels');
 const {
   createBootcamp,
   getAllBootcamps,
@@ -22,7 +24,7 @@ router.route('/radius/:zip/:distance').get(getBootcampWithinRadius);
 router
   .route('/')
   .get(qRes(Bootcamp, 'courses'), getAllBootcamps)
-  .post(createBootcamp);
+  .post(access, L2, createBootcamp);
 
 router
   .route('/:id')

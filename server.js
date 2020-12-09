@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const fileupload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 const colors = require('colors');
 const errorHandler = require('./middleware/errorHandler');
 const connectDB = require('./config/database');
@@ -17,11 +18,15 @@ connectDB();
 const bootcampRoutes = require('./routes/bootcamps');
 const courseRoutes = require('./routes/courses');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 
 const app = express();
 
 // body parser
 app.use(express.json());
+
+// use for cookie processing
+app.use(cookieParser());
 
 // dev logging middleware
 if (process.env.NODE_ENV === 'development') {
@@ -39,6 +44,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/bootcamps', bootcampRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
 
 // middlewares are in a linear fashion
 app.use(errorHandler);
