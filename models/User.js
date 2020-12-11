@@ -3,10 +3,14 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const randomize = require('randomatic');
+const {
+  roles: { USER, PUBLISHER },
+} = require('../consts/enums');
 
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
+    minlength: 1,
     required: [true, 'Please add a name'],
   },
   email: {
@@ -20,7 +24,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'publisher'],
+    enum: [USER, PUBLISHER],
     default: 'user',
   },
   password: {

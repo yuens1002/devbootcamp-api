@@ -25,6 +25,7 @@ exports.access = asyncHandler(async (req, res, next) => {
     const user = await User.findById(decoded.id);
 
     !user && next({ message: 'User does not exist', statusCode: 400 });
+    console.log(user);
     req.user = user;
 
     // middleware needs to call next to proceed

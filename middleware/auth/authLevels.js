@@ -1,7 +1,7 @@
 const { authorize } = require('./auth');
-const ADMIN = 'admin';
-const PUBLISHER = 'publisher';
-const USER = 'user';
+const {
+  roles: { USER, ADMIN, PUBLISHER },
+} = require('../../consts/enums');
 
 const level = {
   L1: [USER],
