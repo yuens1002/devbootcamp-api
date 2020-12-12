@@ -29,92 +29,49 @@ const perms = {
 
 ***********************************************************************/
 
-const errMsg = {
-  [CREATE_BOOTCAMP]: {
-    message: 'Access restricted or role limitation',
-    statusCode: 400,
-  },
-  [OWNERSHIP_REQUIRED]: {
-    message: 'Access restricted or ownership permission required',
-    statusCode: 400,
-  },
-};
-
 exports.permissions = (route) =>
   asyncHandler(async (req, res, next) => {
+    // console.log(`route from permission: ${route}`.red);
     const { role, _id: userId } = req.user;
 
-    const bootcampByUserId = async () => {
-      return await Bootcamp.findOne({ user: userId });
-    };
-
-    const hasCreatedBootcamp = async () => {
+    const canCreateBootcamp = async () => {
       // console.log('hasCreatedBootcamp: ', userId);
-      const foundBootcamp = await bootcampByUserId(userId);
-      // console.log('foundBootcamp: ', foundBootcamp);
-      return foundBootcamp
-        ? next(new ErrorResponse(errMsg[route].message, 400))
-        : next();
+      const foundBootcamp = await Bootcamp.findOne({ user: userId });
+      console.log('foundBootcamp: ', foundBootcamp);
+      return Boolean(!foundBootcamp);
     };
 
     const isOwner = async () => {
-      const bootcamp = await bootcampByUserId();
-      // no bootcamp found ==> the owner isnt the logged in user
+      console.log('route from isOwner: ', route);
 
-      return bootcamp._id.toString() === req.params.id
-        ? next()
-        : next(new ErrorResponse(errMsg[route].message, 400));
+      // routes with '/:id' or '/:bootcampId/courses'
+      const bootcampId = req.params.id || req.params.bootcampId;
+      const foundBootcamp = await Bootcamp.findOne({ user: userId });
+
+      console.log('isOwner: ', foundBootcamp);
+      console.log('req.params.bootcampId: ', req.params.bootcampId);
+
+      // no bootcamp found ==> the owner isnt the logged in user
+      return foundBootcamp._id.toString() === bootcampId;
     };
 
     switch (role) {
       case ADMIN:
+        console.log(ADMIN);
         return next();
       case PUBLISHER:
-        // return publisherRoutes[route];
-        return route === CREATE_BOOTCAMP ? !hasCreatedBootcamp() : isOwner();
+        const permCheck = {
+          [CREATE_BOOTCAMP]: canCreateBootcamp,
+          [OWNERSHIP_REQUIRED]: isOwner,
+        };
+        const errMsg = {
+          [CREATE_BOOTCAMP]: 'Allowance exceeded',
+          [OWNERSHIP_REQUIRED]: 'Ownership required',
+        };
+        return (await permCheck[route]())
+          ? next()
+          : next(new ErrorResponse(errMsg[route], 403));
       default:
-        return next(new ErrorResponse('Permission required', 400));
+        return next(new ErrorResponse('Authorization required', 401));
     }
   });
-
-// const hasPerm = ({ userId = '', role = '', route = '', req = {} }) => {
-//   const publisherRoutes = {
-//     [CREATE_BOOTCAMP]: () => !hasCreatedBootcamp(userId),
-//     [PH_URD_BOOTCAMP]: () => isOwner(userId, req.params.id),
-//   };
-//   switch (role) {
-//     case ADMIN:
-//       return true;
-//     case PUBLISHER:
-//       // return publisherRoutes[route];
-//       return route === CREATE_BOOTCAMP
-//         ? !hasCreatedBootcamp(userId)
-//         : isOwner(userId, req.params.id);
-//     default:
-//       return false;
-//   }
-// };
-
-// const bootcampByUserId = async (userId) => {
-//   // console.log(
-//   //   '🚀 ~ file: permissions.js ~ line 63 ~ bootcampByUserId ~ userId',
-//   //   userId
-//   // );
-//   return await Bootcamp.findOne({ user: userId });
-// };
-
-// const hasCreatedBootcamp = async (userId) => {
-//   // console.log('hasCreatedBootcamp: ', userId);
-//   const foundBootcamp = await bootcampByUserId(userId);
-//   console.log('foundBootcamp: ', foundBootcamp);
-//   return foundBootcamp;
-// };
-
-// const isOwner = async (userId, bootcampId) => {
-//   // if ownerId === userId
-//   // console.log('bootcampId from req: ', bootcampId);
-//   const bootcamp = await bootcampByUserId(userId);
-//   // no bootcamp found ==> the owner isnt the logged in user
-//   // console.log('bootcamp from model: ', bootcamp.id);
-//   return !bootcamp ? false : bootcamp.id === bootcampId;
-// };

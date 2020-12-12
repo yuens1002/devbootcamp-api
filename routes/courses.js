@@ -1,4 +1,4 @@
-const { access } = require('../middleware/auth/auth');
+const { authorization: auth } = require('../middleware/auth/auth');
 const { L2 } = require('../middleware/auth/authLevels');
 const router = require('express').Router({ mergeParams: true });
 const {
@@ -20,11 +20,11 @@ router
   .route('/')
   // 'bootcamp' the property name of the projection set in the Model
   .get(qRes(Course, 'bootcamp'), getAllCourses)
-  .post(access, L2, perm(OWNERSHIP_REQUIRED));
+  .post(auth, L2, perm(OWNERSHIP_REQUIRED), createCourse);
 router
   .route('/:id')
   .get(getCourse)
-  .put(access, L2, perm(OWNERSHIP_REQUIRED))
-  .delete(access, L2, perm(OWNERSHIP_REQUIRED));
+  .put(auth, L2, perm(OWNERSHIP_REQUIRED), updateCourse)
+  .delete(auth, L2, perm(OWNERSHIP_REQUIRED), deleteCourse);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const router = require('express').Router();
-const { access } = require('../middleware/auth/auth');
+const { authorization: auth } = require('../middleware/auth/auth');
 const { getCurrentUser } = require('../controllers/user');
 
-router.route('/').get(access, getCurrentUser);
+router.route('/').get(auth, getCurrentUser);
 
 module.exports = router;

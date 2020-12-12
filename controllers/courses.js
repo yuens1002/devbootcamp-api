@@ -14,6 +14,7 @@ exports.createCourse = asyncHandler(async (req, res, next) => {
   // console.log('bootcampId: ', bootcampId);
   // set bootcamp id to the body of the request
   req.body.bootcamp = bootcampId;
+  req.body.user = userId;
   // need to be sure the bootcamp exists before adding a course to it
   const bootcamp = await Bootcamp.findById(bootcampId);
 

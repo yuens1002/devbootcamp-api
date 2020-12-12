@@ -3,7 +3,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const User = require('../../models/User');
 
 // Protect routes
-exports.access = asyncHandler(async (req, res, next) => {
+exports.authorization = asyncHandler(async (req, res, next) => {
   const { authorization: auth = '' } = req.headers;
 
   if (!auth || !auth.startsWith('Bearer')) {
@@ -38,10 +38,11 @@ exports.access = asyncHandler(async (req, res, next) => {
 // grant access to specific roles
 exports.authorize = (roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    const { role = '' } = req.user;
+    if (!roles.includes(role)) {
       return next({
-        message: `Access level ${req.user.role} is not authorized`,
-        statusCode: 403,
+        message: `User role [${role.toUpperCase()}] is not authorized`,
+        statusCode: 401,
       });
     }
     next();
