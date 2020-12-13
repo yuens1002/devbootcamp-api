@@ -15,7 +15,7 @@ const Bootcamp = require('../models/Bootcamp');
 const qRes = require('../middleware/qRes');
 const { permissions: perm } = require('../middleware/permissions');
 const {
-  routes: { CREATE_BOOTCAMP, OWNERSHIP_REQUIRED },
+  routes: { CREATE_BOOTCAMP, BOOTCAMP_OWNERSHIP },
 } = require('../consts/enums');
 
 // include course routes
@@ -33,11 +33,11 @@ router
 router
   .route('/:id')
   .get(getBootcamp)
-  .put(auth, L2, perm(OWNERSHIP_REQUIRED), updateBootcamp)
-  .delete(auth, L2, perm(OWNERSHIP_REQUIRED), deleteBootcamp);
+  .put(auth, L2, perm(BOOTCAMP_OWNERSHIP), updateBootcamp)
+  .delete(auth, L2, perm(BOOTCAMP_OWNERSHIP), deleteBootcamp);
 
 router
   .route('/:id/photo')
-  .put(auth, L2, perm(OWNERSHIP_REQUIRED), uploadBootcampPhoto);
+  .put(auth, L2, perm(BOOTCAMP_OWNERSHIP), uploadBootcampPhoto);
 
 module.exports = router;

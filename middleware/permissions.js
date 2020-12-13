@@ -1,9 +1,10 @@
-const asyncHandler = require('../utils/asyncHandler');
 const Bootcamp = require('../models/Bootcamp');
+const Course = require('../models/Course');
+const asyncHandler = require('../utils/asyncHandler');
 const ErrorResponse = require('../utils/errorResponse');
 const {
   roles: { ADMIN, PUBLISHER },
-  routes: { CREATE_BOOTCAMP, OWNERSHIP_REQUIRED },
+  routes: { CREATE_BOOTCAMP, BOOTCAMP_OWNERSHIP, UPDATE_DEL_COURSE },
 } = require('../consts/enums');
 
 /************************************************************************
@@ -32,6 +33,7 @@ const perms = {
 exports.permissions = (route) =>
   asyncHandler(async (req, res, next) => {
     // console.log(`route from permission: ${route}`.red);
+    // console.log(`route from permission: ${req.params.id}`.green.inverse);
     const { role, _id: userId } = req.user;
 
     const canCreateBootcamp = async () => {
@@ -41,18 +43,38 @@ exports.permissions = (route) =>
       return Boolean(!foundBootcamp);
     };
 
-    const isOwner = async () => {
-      console.log('route from isOwner: ', route);
-
+    const isBootcampOwner = async () => {
       // routes with '/:id' or '/:bootcampId/courses'
       const bootcampId = req.params.id || req.params.bootcampId;
+      if (!(await Bootcamp.findById(bootcampId))) {
+        throw new ErrorResponse(
+          `Bootcamp not found with the id of ${bootcampId}`,
+          404
+        );
+      }
       const foundBootcamp = await Bootcamp.findOne({ user: userId });
-
-      console.log('isOwner: ', foundBootcamp);
-      console.log('req.params.bootcampId: ', req.params.bootcampId);
-
-      // no bootcamp found ==> the owner isnt the logged in user
+      // possibility a publisher hasn't created a bootcamp
+      if (!foundBootcamp) {
+        throw new ErrorResponse(
+          'Please create a bootcamp first before adding a course',
+          400
+        );
+      }
       return foundBootcamp._id.toString() === bootcampId;
+    };
+
+    const isCourseOwner = async () => {
+      const courseId = req.params.id;
+      const course = await Course.findById(courseId);
+      console.log(course);
+      // in case course isn't found
+      if (!course) {
+        throw new ErrorResponse(
+          `Course not found with the id of ${courseId}`,
+          404
+        );
+      }
+      return course.user.toString() === userId.toString();
     };
 
     switch (role) {
@@ -60,13 +82,15 @@ exports.permissions = (route) =>
         console.log(ADMIN);
         return next();
       case PUBLISHER:
-        const permCheck = {
-          [CREATE_BOOTCAMP]: canCreateBootcamp,
-          [OWNERSHIP_REQUIRED]: isOwner,
-        };
         const errMsg = {
           [CREATE_BOOTCAMP]: 'Allowance exceeded',
-          [OWNERSHIP_REQUIRED]: 'Ownership required',
+          [BOOTCAMP_OWNERSHIP]: 'Bootcamp ownership required',
+          [UPDATE_DEL_COURSE]: 'Course ownership required',
+        };
+        const permCheck = {
+          [CREATE_BOOTCAMP]: canCreateBootcamp,
+          [BOOTCAMP_OWNERSHIP]: isBootcampOwner,
+          [UPDATE_DEL_COURSE]: isCourseOwner,
         };
         return (await permCheck[route]())
           ? next()
