@@ -1,10 +1,16 @@
 const Bootcamp = require('../models/Bootcamp');
 const Course = require('../models/Course');
+const Review = require('../models/Review');
 const asyncHandler = require('../utils/asyncHandler');
 const ErrorResponse = require('../utils/errorResponse');
 const {
-  roles: { ADMIN, PUBLISHER },
-  routes: { CREATE_BOOTCAMP, BOOTCAMP_OWNERSHIP, UPDATE_DEL_COURSE },
+  roles: { ADMIN, PUBLISHER, USER },
+  routes: {
+    CREATE_BOOTCAMP,
+    BOOTCAMP_OWNERSHIP,
+    UPDATE_DEL_COURSE,
+    REVIEW_OWNERSHIP,
+  },
 } = require('../consts/enums');
 
 /************************************************************************
@@ -39,7 +45,7 @@ exports.permissions = (route) =>
     const canCreateBootcamp = async () => {
       // console.log('hasCreatedBootcamp: ', userId);
       const foundBootcamp = await Bootcamp.findOne({ user: userId });
-      console.log('foundBootcamp: ', foundBootcamp);
+      // console.log('foundBootcamp: ', foundBootcamp);
       return Boolean(!foundBootcamp);
     };
 
@@ -63,10 +69,20 @@ exports.permissions = (route) =>
       return foundBootcamp._id.toString() === bootcampId;
     };
 
+    const isReviewOwner = async () => {
+      const review = await Review.findById(req.params.id);
+      if (!review) {
+        throw new ErrorResponse(
+          `Review not found with id ${req.params.id}`,
+          404
+        );
+      }
+      return review.user.toString() === req.user.id;
+    };
+
     const isCourseOwner = async () => {
       const courseId = req.params.id;
       const course = await Course.findById(courseId);
-      console.log(course);
       // in case course isn't found
       if (!course) {
         throw new ErrorResponse(
@@ -77,9 +93,18 @@ exports.permissions = (route) =>
       return course.user.toString() === userId.toString();
     };
 
+    /******************************************************
+     * should refactor cases to check for route and role,
+     * due to forgoing all error checking from controllers
+     ******************************************************/
+
     switch (role) {
       case ADMIN:
-        console.log(ADMIN);
+        if (route === REVIEW_OWNERSHIP) {
+          // for error checking
+          await isReviewOwner();
+          return next();
+        }
         return next();
       case PUBLISHER:
         const errMsg = {
@@ -92,9 +117,15 @@ exports.permissions = (route) =>
           [BOOTCAMP_OWNERSHIP]: isBootcampOwner,
           [UPDATE_DEL_COURSE]: isCourseOwner,
         };
+        if (!permCheck[route]) break;
         return (await permCheck[route]())
           ? next()
           : next(new ErrorResponse(errMsg[route], 403));
+      case USER:
+        if (route !== REVIEW_OWNERSHIP) break;
+        return (await isReviewOwner())
+          ? next()
+          : next(new ErrorResponse('Review ownership required', 403));
       default:
         return next(new ErrorResponse('Authorization required', 401));
     }

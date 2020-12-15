@@ -7,7 +7,7 @@ exports.authorization = asyncHandler(async (req, res, next) => {
   const { authorization: auth = '' } = req.headers;
 
   if (!auth || !auth.startsWith('Bearer')) {
-    return next({ message: 'Authorization is required', statusCode: 400 });
+    return next({ message: 'Authorization is required', statusCode: 401 });
   }
 
   // eg. token format: Bearer XXXXXXX

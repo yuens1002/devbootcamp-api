@@ -18,10 +18,12 @@ const {
   routes: { CREATE_BOOTCAMP, BOOTCAMP_OWNERSHIP },
 } = require('../consts/enums');
 
-// include course routes
+// include other routes
 const courseRoutes = require('./courses');
+const reviewRoutes = require('./reviews');
 // re-route into other resource routes
 router.use('/:bootcampId/courses', courseRoutes);
+router.use('/:bootcampId/reviews', reviewRoutes);
 
 router.route('/radius/:zip/:distance').get(getBootcampWithinRadius);
 

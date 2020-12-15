@@ -6,7 +6,7 @@ const errorHandler = (err, req, res, next) => {
   // look up https://mongoosejs.com/docs/api.html#error_Error for more
 
   if (err.name === 'CastError') {
-    message = `Resource id of ${err.value} is in the wrong format`;
+    message = `[${err.value}] is in the wrong format or data type`;
     error = new ErrorResponse(message, 404);
   }
   // duplicate error

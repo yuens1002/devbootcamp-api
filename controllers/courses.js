@@ -1,6 +1,5 @@
 const asyncHandler = require('../utils/asyncHandler');
 const Course = require('../models/Course');
-const Bootcamp = require('../models/Bootcamp');
 
 /*
  * Course CRUD
