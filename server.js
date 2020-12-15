@@ -2,6 +2,12 @@ const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const fileupload = require('express-fileupload');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const rateLimiter = require('express-rate-limit');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const colors = require('colors');
 const errorHandler = require('./middleware/errorHandler');
@@ -35,8 +41,23 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// be sure to use this after mounting thr routers
+// allow file upload
 app.use(fileupload());
+
+// sanitization & security
+app.use(mongoSanitize());
+app.use(helmet());
+app.use(xss());
+app.use(hpp());
+
+app.use(
+  rateLimiter({
+    windowMs: 10 * 60 * 1000, // 10mins
+    max: 100,
+  })
+);
+
+app.use(cors());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')));

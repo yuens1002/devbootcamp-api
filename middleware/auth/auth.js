@@ -1,21 +1,27 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('../../utils/asyncHandler');
+const ErrorResponse = require('../../utils/errorResponse');
 const User = require('../../models/User');
 
 // Protect routes
 exports.authorization = asyncHandler(async (req, res, next) => {
   const { authorization: auth = '' } = req.headers;
 
-  if (!auth || !auth.startsWith('Bearer')) {
-    return next({ message: 'Authorization is required', statusCode: 401 });
-  }
+  // set token from cookies if it exists
+  let token = req.cookies.token || '';
 
-  // eg. token format: Bearer XXXXXXX
-  const token = auth.split(' ')[1];
-
-  // ensure token exists
   if (!token) {
-    return next({ message: 'Access not authorized', statusCode: 401 });
+    if (!auth || !auth.startsWith('Bearer')) {
+      return next({ message: 'Authorization is required', statusCode: 401 });
+    }
+
+    // eg. token format: Bearer XXXXXXX
+    token = auth.split(' ')[1];
+
+    // ensure token exists
+    if (!token) {
+      return next({ message: 'Access not authorized', statusCode: 401 });
+    }
   }
 
   try {

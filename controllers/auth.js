@@ -128,8 +128,18 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
-  console.log('ps reset user after save: ', user);
   sendTokenRes({ user, statusCode: 200, res });
+});
+
+// @desc      Logout current user / clear cookie
+// @route     GET /api/v1/auth/logout
+// @access    Private
+exports.logout = asyncHandler(async (req, res, next) => {
+  res.cookie('token', 'none', {
+    expires: new Date(Date.now() + 1 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ success: true, message: 'Logout successful' });
 });
 
 // Get token from modal, create the cookie then send w/ response
