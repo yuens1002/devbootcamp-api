@@ -1,6 +1,12 @@
 # DevCamper API
 
-> backend public API to handle CRUD requests, user registration/authentication, role based tiered permission and user administration. Written in NodeJS running an express server connected to a MongoDB atlas instance using Mongoose.
+> backend public API to handle CRUD requests, user registration/authentication, role based permissions and user administration.
+
+Written in NodeJS - runs an Express server connected to a MongoDB Atlas instance using Mongoose.
+
+## API Documentation
+
+<https://documenter.getpostman.com/view/568090/TVspjUtV>
 
 ## Basic Usage
 
@@ -20,6 +26,8 @@ npm run dev
 //Run in production mode
 npm start
 ```
+
+---
 
 - version: 1.0.0
 - License MIT
