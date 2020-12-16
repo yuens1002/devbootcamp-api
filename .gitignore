@@ -1,5 +1,4 @@
 node_modules/
 config/config.env
-public/
 _data/
 seeder.js
